@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { DramaCanvas } from './components/Canvas/DramaCanvas';
 import { PreviewModal } from './components/Preview/PreviewModal';
-import { Sidebar } from './components/Sidebar/Sidebar';
 import { Toolbar } from './components/Toolbar/Toolbar';
 import { BottomToolbar } from './components/Toolbar/BottomToolbar';
 
 /**
- * App 负责拼装三块核心体验：顶部命令区、无限画布、右侧属性面板。
+ * App 负责拼装两块核心体验：顶部命令区、无限画布。
  * ReactFlowProvider 放在这里，是为了让 Toolbar 也能调用 useReactFlow 控制缩放和适应视图。
  */
 function App() {
@@ -24,8 +23,9 @@ function App() {
           <DramaCanvas />
         </section>
 
-        <Sidebar />
-        <PreviewModal open={previewOpen} onClose={() => setPreviewOpen(false)} />
+        {previewOpen && (
+          <PreviewModal open onClose={() => setPreviewOpen(false)} />
+        )}
 
         {/* 底部悬浮工具栏 */}
         <BottomToolbar />

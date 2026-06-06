@@ -6,6 +6,9 @@ export type SceneType = 'opening' | 'normal' | 'climax' | 'ending';
 /** 转场类型 */
 export type TransitionType = 'fade' | 'cut' | 'dissolve';
 
+/** 文本优化方向 */
+export type TextOptimizeDirection = 'vivid' | 'concise' | 'dramatic' | 'custom';
+
 /** 场景数据 */
 export interface SceneData {
   title: string;
@@ -20,6 +23,14 @@ export interface SceneData {
   [key: string]: unknown; // React Flow 要求 Node data 可索引
 }
 
+/** 文本节点数据 */
+export interface TextNodeData {
+  title: string;
+  content: string;
+  isGenerating?: boolean;
+  [key: string]: unknown;
+}
+
 /** 转场边数据 */
 export interface TransitionEdgeData {
   transitionType: TransitionType;
@@ -28,6 +39,24 @@ export interface TransitionEdgeData {
 
 /** 场景节点类型 */
 export type SceneNode = Node<SceneData, 'scene'>;
+
+/** 文本节点类型 */
+export type TextNode = Node<TextNodeData, 'text'>;
+
+/** 图片节点数据 */
+export interface ImageNodeData {
+  title: string;
+  imageUrl?: string;
+  description?: string;
+  isGenerating?: boolean;
+  [key: string]: unknown;
+}
+
+/** 图片节点类型 */
+export type ImageNode = Node<ImageNodeData, 'image'>;
+
+/** 画布上所有节点的联合类型 */
+export type DramaNode = SceneNode | TextNode | ImageNode;
 
 /** 转场边类型 */
 export type TransitionEdge = Edge<TransitionEdgeData>;

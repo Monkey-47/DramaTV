@@ -1,10 +1,14 @@
-import type { SceneNode, TransitionEdge } from '../types';
+import type { DramaNode, SceneNode, TransitionEdge } from '../types';
 
 /**
  * 根据连线关系推导一个适合短剧剧情流的播放顺序。
- * Demo 中不强制用户搭建严格 DAG，因此这里会兜底处理分叉和孤立节点。
+ * 预览只关心“场景节点”，因此先把文本/图片等非场景节点过滤掉，
+ * 再在场景子图上做拓扑排序。Demo 中不强制严格 DAG，会兜底处理分叉和孤立节点。
  */
-export function getPreviewSequence(nodes: SceneNode[], edges: TransitionEdge[]): SceneNode[] {
+export function getPreviewSequence(allNodes: DramaNode[], edges: TransitionEdge[]): SceneNode[] {
+  const nodes = allNodes.filter((node): node is SceneNode => node.type === 'scene');
+  const sceneIds = new Set(nodes.map((node) => node.id));
+
   const nodeMap = new Map(nodes.map((node) => [node.id, node]));
   const incomingCount = new Map(nodes.map((node) => [node.id, 0]));
   const outgoing = new Map<string, string[]>();
@@ -12,6 +16,8 @@ export function getPreviewSequence(nodes: SceneNode[], edges: TransitionEdge[]):
   nodes.forEach((node) => outgoing.set(node.id, []));
 
   edges.forEach((edge) => {
+    // 只保留两端都是场景节点的边，避免把非场景节点的连线计入排序
+    if (!sceneIds.has(edge.source) || !sceneIds.has(edge.target)) return;
     outgoing.get(edge.source)?.push(edge.target);
     incomingCount.set(edge.target, (incomingCount.get(edge.target) || 0) + 1);
   });

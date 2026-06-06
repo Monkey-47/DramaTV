@@ -9,16 +9,16 @@ import {
   type OnConnect,
   type Connection,
 } from '@xyflow/react';
-import type { SceneNode, TransitionEdge, SceneData, SceneType, TransitionType } from '../types';
+import type { SceneNode, TextNode, ImageNode, TransitionEdge, SceneData, TextNodeData, ImageNodeData, SceneType, TransitionType } from '../types';
 import { initialNodes, initialEdges } from '../data/mockData';
 
 interface HistoryState {
-  nodes: SceneNode[];
+  nodes: (SceneNode | TextNode | ImageNode)[];
   edges: TransitionEdge[];
 }
 
 interface DramaState {
-  nodes: SceneNode[];
+  nodes: (SceneNode | TextNode | ImageNode)[];
   edges: TransitionEdge[];
   selectedNodeId: string | null;
 
@@ -39,7 +39,11 @@ interface DramaState {
   // 节点操作
   selectNode: (id: string | null) => void;
   addSceneNode: (position?: { x: number; y: number }, sceneType?: SceneType) => void;
+  addTextNode: (position?: { x: number; y: number }) => void;
+  addImageNode: (position?: { x: number; y: number }, imageUrl?: string, title?: string) => string;
   updateSceneData: (nodeId: string, data: Partial<SceneData>) => void;
+  updateTextNodeData: (nodeId: string, data: Partial<TextNodeData>) => void;
+  updateImageNodeData: (nodeId: string, data: Partial<ImageNodeData>) => void;
   deleteNode: (nodeId: string) => void;
 
   // 边操作
@@ -197,10 +201,70 @@ export const useDramaStore = create<DramaState>()(
         saveHistory();
       },
 
+      addTextNode: (position) => {
+        nodeIdCounter++;
+
+        const newNode: TextNode = {
+          id: `text-${nodeIdCounter}`,
+          type: 'text',
+          position: position || { x: 300 + Math.random() * 200, y: 200 + Math.random() * 200 },
+          data: {
+            title: `文本节点 ${nodeIdCounter}`,
+            content: '',
+          },
+        };
+
+        // 先 push
+        set((state) => {
+          state.nodes.push(newNode);
+        });
+
+        // 再保存"已包含新节点"的状态到历史堆栈
+        saveHistory();
+      },
+
+      addImageNode: (position, imageUrl, title) => {
+        nodeIdCounter++;
+        const newId = `image-${nodeIdCounter}`;
+
+        const newNode: ImageNode = {
+          id: newId,
+          type: 'image',
+          position: position || { x: 300 + Math.random() * 200, y: 200 + Math.random() * 200 },
+          data: {
+            title: title || `图片节点 ${nodeIdCounter}`,
+            imageUrl,
+          },
+        };
+
+        set((state) => {
+          state.nodes.push(newNode);
+        });
+
+        saveHistory();
+        return newId;
+      },
+
       updateSceneData: (nodeId, data) =>
         set((state) => {
           const node = state.nodes.find((n) => n.id === nodeId);
-          if (node) {
+          if (node && node.type === 'scene') {
+            Object.assign(node.data, data);
+          }
+        }),
+
+      updateTextNodeData: (nodeId, data) =>
+        set((state) => {
+          const node = state.nodes.find((n) => n.id === nodeId);
+          if (node && node.type === 'text') {
+            Object.assign(node.data, data);
+          }
+        }),
+
+      updateImageNodeData: (nodeId, data) =>
+        set((state) => {
+          const node = state.nodes.find((n) => n.id === nodeId);
+          if (node && node.type === 'image') {
             Object.assign(node.data, data);
           }
         }),
@@ -220,7 +284,7 @@ export const useDramaStore = create<DramaState>()(
       updateEdgeTransition: (edgeId, transitionType) =>
         set((state) => {
           const edge = state.edges.find((e) => e.id === edgeId);
-          if (edge) {
+          if (edge?.data) {
             edge.data.transitionType = transitionType;
           }
         }),
@@ -230,7 +294,7 @@ export const useDramaStore = create<DramaState>()(
 
         setTimeout(() => {
           const scene = get().nodes.find((n) => n.id === nodeId);
-          const sceneType = scene?.data.sceneType || 'normal';
+          const sceneType = scene?.type === 'scene' ? scene.data.sceneType : 'normal';
           const colors: Record<string, string> = {
             opening: '3b82f6',
             normal: '6b7280',
