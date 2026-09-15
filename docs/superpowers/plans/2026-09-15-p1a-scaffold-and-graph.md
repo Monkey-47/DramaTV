@@ -93,6 +93,18 @@ Error: [vite]: Rolldown failed to resolve import "@unocss/reset/tailwind.css"
 
 初稿没提。Vite 配置文件在 `tsconfig.node.json` 里被类型检查，`uno.config.ts` 同样需要加进它的 `include`，否则这个文件不受任何 tsconfig 覆盖、类型错误不会被发现。
 
+**⑨ `vitest.config.ts` 导入 `vite.config` 必须带 `.ts` 扩展名**
+
+初稿写的是 `import viteConfig from './vite.config'`。能跑，但 Vite 会报前向兼容警告：
+
+```
+Your Vite config uses features that are unsupported by `configLoader: 'native'`,
+which is planned to become the default in a future major version of Vite:
+  - import "./vite.config" without a file extension (vitest.config.ts:2:24)
+```
+
+改成 `'./vite.config.ts'` 后，TypeScript 又要求 `tsconfig.node.json` 开 `allowImportingTsExtensions`（否则报 TS5097）。两处要一起改。
+
 ---
 
 ## 文件结构
@@ -255,19 +267,22 @@ git commit -m "chore: 移除旧 React 实现，为 Vue 重写腾出空间
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023"],
+    "moduleDetection": "force",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "moduleDetection": "force"
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts"]
+  "include": ["uno.config.ts", "vite.config.ts", "vitest.config.ts"]
 }
 ```
+
+> `allowImportingTsExtensions` 是给 `vitest.config.ts` 用的 —— 它需要以 `.ts` 扩展名导入 `./vite.config.ts`（见偏差 ⑨）。该选项要求 `noEmit: true`，此处满足。
 
 - [ ] **Step 3: 创建 `vite.config.ts`**
 
@@ -662,7 +677,7 @@ git commit -m "chore: 接入 UnoCSS 与 Naive UI，挂载 Pinia"
 
 ```ts
 import { defineConfig, mergeConfig } from 'vitest/config'
-import viteConfig from './vite.config'
+import viteConfig from './vite.config.ts'
 
 export default mergeConfig(
   viteConfig,
