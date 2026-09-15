@@ -47,6 +47,16 @@ error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeSc
 
 `paths` 从 TS 4.1 起就不需要 `baseUrl` 了（相对 tsconfig 所在目录解析），所以正确做法是**直接删除该选项**，而不是按错误提示加 `ignoreDeprecations` 去掩盖。
 
+**③ `typecheck` 脚本原本是沉默失效的**
+
+初稿写的是 `"typecheck": "vue-tsc --noEmit"`。根 `tsconfig.json` 是 solution-style 配置（`"files": []` + `references`），`--noEmit` 只读根配置、发现没有文件，**直接退出 0，什么都不检查**。references 只有 build 模式（`-b`）才会跟进。
+
+**这个坑很阴：`pnpm typecheck` 会对任何类型错误保持沉默，一路报绿。** 若没有 Task 3 的探针，这个问题要等到很久以后某个类型 bug 溜进生产才会暴露。
+
+已改为 `vue-tsc -b`。
+
+> **本条直接印证了 Task 3 的价值**：验证型任务不是走过场。三处故意写错的语句，第一版脚本报的却是"一切正常"。
+
 ---
 
 ## 文件结构
@@ -135,7 +145,7 @@ git commit -m "chore: 移除旧 React 实现，为 Vue 重写腾出空间
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit",
+    "typecheck": "vue-tsc -b",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
