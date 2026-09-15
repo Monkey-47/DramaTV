@@ -79,6 +79,20 @@ error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeSc
 
 首次 `pnpm lint` 报了 19 个 `jsonc/sort-keys` 错误。这是 antfu 配置的预期行为（它会按固定顺序排列配置对象的键），跑一次 `pnpm lint:fix` 即可，不影响语义。
 
+**⑦ `@unocss/reset` 是独立包，必须单独安装**
+
+初稿只装了 `unocss`，结果 `main.ts` 里 `import '@unocss/reset/tailwind.css'` 构建失败：
+
+```
+Error: [vite]: Rolldown failed to resolve import "@unocss/reset/tailwind.css"
+```
+
+`@unocss/reset` 不随主包发布。它的可用入口有 `tailwind.css` / `tailwind-v4.css` / `tailwind-compat.css` / `normalize.css` / `eric-meyer.css` —— 本项目用 `tailwind.css`，与 `presetWind3`（Tailwind 3 语义）配对。
+
+**⑧ `uno.config.ts` 要纳入 tsconfig 的 include**
+
+初稿没提。Vite 配置文件在 `tsconfig.node.json` 里被类型检查，`uno.config.ts` 同样需要加进它的 `include`，否则这个文件不受任何 tsconfig 覆盖、类型错误不会被发现。
+
 ---
 
 ## 文件结构
@@ -531,10 +545,12 @@ git commit -m "chore: 接入 ESLint，锁定画布库只在 features/canvas 内�
 
 Run:
 ```bash
-pnpm add -D unocss@^66.10.3
+pnpm add -D unocss@^66.10.3 @unocss/reset
 pnpm add naive-ui@^2.45.3
 ```
 Expected: 安装成功
+
+> **`@unocss/reset` 是独立包，不随 `unocss` 一起来。** 漏装它会导致 `main.ts` 里 `import '@unocss/reset/tailwind.css'` 构建失败（Rolldown 无法解析该导入）。
 
 - [ ] **Step 2: 创建 `uno.config.ts`**
 

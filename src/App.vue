@@ -3,5 +3,7 @@
 </script>
 
 <template>
-  <div>AI Video Creator</div>
+  <div class="text-red-500">
+    AI Video Creator
+  </div>
 </template>

@@ -12,5 +12,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts"]
+  "include": ["uno.config.ts", "vite.config.ts", "vitest.config.ts"]
 }
