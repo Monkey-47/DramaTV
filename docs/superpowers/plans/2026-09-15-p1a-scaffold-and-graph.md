@@ -20,6 +20,33 @@
 
 > MSW 和 vue-router 是 1.1 清单里列的项，此处**有意延后**到它们有实际用途的那一刻。`src/views/` 目录先建好占位，但保持为空。
 
+### 执行中发现的偏差（2026-09-15 执行时回写）
+
+计划初稿里有两处错误，执行 Task 2 时撞到并已修正，**重跑本计划时以修正后的内容为准**：
+
+**① TypeScript 必须用 6.x，不能用 7.x**
+
+初稿写的是 `typescript@^7.0.2`。实际装上后 `vue-tsc` 直接崩溃：
+
+```
+Error [ERR_PACKAGE_PATH_NOT_EXPORTED]:
+Package subpath './lib/tsc' is not defined by "exports" in typescript/package.json
+```
+
+原因：TypeScript 7 重构了 package `exports`，移除了 `./lib/tsc` 子路径，而 `vue-tsc` 正是靠 `require.resolve('typescript/lib/tsc')` 定位编译器的。
+
+**注意 `vue-tsc` 的 peer 声明是 `typescript: ">=5.0.0"`，它允许 TS 7 通过 —— peer 范围在这里是错的，不能信。** 已改用 `typescript@^6.0.3`。
+
+**② `baseUrl` 必须删掉**
+
+初稿的 `tsconfig.app.json` 里有 `"baseUrl": "."`。TS 6 起该选项已废弃：
+
+```
+error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0.
+```
+
+`paths` 从 TS 4.1 起就不需要 `baseUrl` 了（相对 tsconfig 所在目录解析），所以正确做法是**直接删除该选项**，而不是按错误提示加 `ignoreDeprecations` 去掩盖。
+
 ---
 
 ## 文件结构
@@ -123,7 +150,7 @@ git commit -m "chore: 移除旧 React 实现，为 Vue 重写腾出空间
     "@vitejs/plugin-vue": "^6.0.9",
     "@vue/test-utils": "^2.5.0",
     "jsdom": "^30.0.1",
-    "typescript": "^7.0.2",
+    "typescript": "^6.0.3",
     "vite": "^8.3.0",
     "vitest": "^5.0.1",
     "vue-tsc": "^3.3.11"
@@ -170,7 +197,6 @@ git commit -m "chore: 移除旧 React 实现，为 Vue 重写腾出空间
     "skipLibCheck": true,
     "noEmit": true,
 
-    "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src/**/*.ts", "src/**/*.vue"]

@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# TypeScript 增量编译信息
+*.tsbuildinfo
+
 # Claude Code session data
 .claude/
 
