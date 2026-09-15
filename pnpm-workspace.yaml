@@ -1,4 +1,11 @@
+minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
   - '@vitest/mocker@5.0.1'
   - '@vitest/spy@5.0.1'
   - vitest@5.0.1
+
+trustPolicy: no-downgrade
+shellEmulator: true
+
+allowBuilds:
+  vue-demi: set this to true or false

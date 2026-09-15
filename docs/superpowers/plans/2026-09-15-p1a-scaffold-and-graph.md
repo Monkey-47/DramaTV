@@ -57,6 +57,28 @@ error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeSc
 
 > **本条直接印证了 Task 3 的价值**：验证型任务不是走过场。三处故意写错的语句，第一版脚本报的却是"一切正常"。
 
+**④ 不能在 Task 4 安装 `@vue-flow/core`（会堵死整个项目）**
+
+初稿让 Task 4 装画布库以便测试边界规则。实际装上后：
+
+```
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: vue-demi@0.14.10
+```
+
+`vue-demi`（Vue Flow 依赖的 Vue 2/3 兼容层）的 postinstall 被 pnpm 11 的供应链防护拦下，而该错误会让 **pnpm 在运行任何 script 前就失败** —— `pnpm lint`、`pnpm dev` 全部堵死，不是局部问题。
+
+已从 Task 4 移除画布库。边界规则**不需要包存在**：`no-restricted-imports` 匹配 import 字符串，ESLint 不做模块解析（执行时已确认规则照常拦截）。
+
+> ⚠️ **P1-b 安装画布库时会再次遇到这个问题。** 届时要决定是否授权 `vue-demi` 执行 postinstall（在 `pnpm-workspace.yaml` 加 `onlyBuiltDependencies`）。这属于授权第三方代码在本机执行，**应由人来决定**，不要默默放行。
+
+**⑤ 边界规则用 `patterns` 通配，不要同时写 `paths`**
+
+初稿同时写了 `paths`（精确匹配 `@vue-flow/core`）和 `patterns`（`@vue-flow/*`），结果同一个 import **被报两次**。通配已覆盖精确项，已删掉 `paths`，只留 `patterns`。
+
+**⑥ `lint:fix` 会重排 tsconfig / package.json / index.html 的键顺序**
+
+首次 `pnpm lint` 报了 19 个 `jsonc/sort-keys` 错误。这是 antfu 配置的预期行为（它会按固定顺序排列配置对象的键），跑一次 `pnpm lint:fix` 即可，不影响语义。
+
 ---
 
 ## 文件结构
@@ -391,16 +413,17 @@ git commit -m "chore: 用探针验证 TS 严格选项生效"
 - Create: `eslint.config.js`
 - Create（临时，验证后删除）: `src/shared/probe-import.ts`
 
-- [ ] **Step 1: 安装 ESLint 与 antfu 配置，并装画布库以便测试规则**
+- [ ] **Step 1: 安装 ESLint、antfu 配置与 `eslint-plugin-format`**
 
 Run:
 ```bash
-pnpm add -D eslint@^10.10.0 @antfu/eslint-config@^9.5.1
-pnpm add @vue-flow/core@^1.48.2
+pnpm add -D eslint@^10.10.0 @antfu/eslint-config@^9.5.1 eslint-plugin-format
 ```
 Expected: 安装成功
 
-> 此处装 `@vue-flow/core` 是为了让边界规则可被实际测试。它是否长期保留，取决于 P1-b 画布引擎的可行性验证结果。
+> **`eslint-plugin-format` 必须显式安装。** antfu 配置开了 `formatters: true` 时会需要它，缺失状态下 ESLint 会**弹出交互式提问**问要不要装 —— 本地能用手点，CI 会直接挂住。
+>
+> **本步骤不安装 `@vue-flow/core`。** 边界规则匹配的是 import 字符串，ESLint 不做模块解析，规则无需包存在即可验证（执行时已确认）。画布库统一在 P1-b 安装。
 
 - [ ] **Step 2: 创建 `eslint.config.js`**
 

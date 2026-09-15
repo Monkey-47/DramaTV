@@ -2,15 +2,15 @@
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023"],
+    "moduleDetection": "force",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "moduleDetection": "force"
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
   },
   "include": ["vite.config.ts", "vitest.config.ts"]
 }
