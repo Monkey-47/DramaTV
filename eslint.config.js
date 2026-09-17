@@ -9,6 +9,8 @@ export default antfu({
     'node_modules',
     '.agents',
     'docs/**',
+    // public/mockServiceWorker.js 由 `msw init` 生成，不是我们的源码
+    'public/**',
   ],
 }, {
   // 画布库边界约束（设计文档 §6.1）：

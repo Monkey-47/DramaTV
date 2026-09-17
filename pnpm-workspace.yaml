@@ -32,4 +32,5 @@ trustPolicy: no-downgrade
 shellEmulator: true
 
 allowBuilds:
-  vue-demi: set this to true or false
+  msw: true
+  vue-demi: true
