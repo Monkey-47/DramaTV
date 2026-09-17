@@ -28,6 +28,14 @@ export interface GraphNode {
   position: NodePosition
   /** 该节点的参数值 */
   data: Record<string, unknown>
+  /**
+   * 用户给这个节点起的别名，如「主角生成器」。
+   *
+   * 可选：不填就显示节点类型定义里的 label（「文生图」）。
+   * 一个工作流里同一类型可能有好几个，光靠类型名分不清谁是谁，
+   * 所以需要这一层。属于定义态，会持久化。
+   */
+  label?: string
   adopted?: AdoptedOutput
 }
 
@@ -49,4 +57,27 @@ export interface GraphEdge {
 export interface WorkflowGraph {
   nodes: GraphNode[]
   edges: GraphEdge[]
+}
+
+/**
+ * 工作流在画布上的放置信息（设计文档 §3.1 / §6.1）。
+ * 子节点 position 是 workflow 内的相对坐标，渲染时叠加 placement.x/y 偏移。
+ * 这个转换只在 features/canvas 内做（设计文档 §6.1 边界规则）。
+ */
+export interface WorkflowPlacement {
+  x: number
+  y: number
+  /** 分区配色 1-5，对应 uno.config.ts 的 wf.1..wf.5 */
+  color?: 1 | 2 | 3 | 4 | 5
+}
+
+/**
+ * 工作流的一等容器（设计文档 §2.1）。
+ * 一个 Project 可以铺开多个 Workflow，各自独立执行。
+ */
+export interface Workflow {
+  id: string
+  name: string
+  placement: WorkflowPlacement
+  graph: WorkflowGraph
 }
