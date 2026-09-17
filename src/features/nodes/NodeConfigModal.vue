@@ -176,6 +176,7 @@ function onAfterLeave(): void {
         :schema="definition.params"
         :params="params"
         :presets="definition.presets"
+        :form-columns="definition.formColumns"
         @update:param="(k, v) => emit('update:param', k, v)"
         @apply-preset="p => emit('applyPreset', p)"
       />

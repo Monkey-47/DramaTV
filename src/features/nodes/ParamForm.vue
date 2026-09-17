@@ -10,7 +10,7 @@
  * 3. **预设按钮置顶** —— 不懂 sampler / CFG 的人也能一键拿到调好的参数组合。
  */
 import type { NodePreset, ParamField, ParamSchema } from './nodes.types'
-import { NCollapse, NCollapseItem, NTooltip } from 'naive-ui'
+import { NCollapse, NCollapseItem, NInputNumber, NTooltip } from 'naive-ui'
 import { computed } from 'vue'
 import { applyDefaults, partitionFields } from './fields/param-helpers'
 import ParamControl from './fields/ParamControl.vue'
@@ -19,6 +19,8 @@ const props = defineProps<{
   schema: ParamSchema
   params: Record<string, unknown>
   presets?: readonly NodePreset[] | undefined
+  /** 栅格列数，由节点定义声明（默认 3） */
+  formColumns?: 2 | 3 | undefined
 }>()
 
 // 注：事件名用 camelCase 是 antfu 的 vue/custom-event-name-casing 要求的。
@@ -44,6 +46,37 @@ const advancedTitle = computed(() => `高级（${groups.value.advanced.length} �
 function spanStyle(field: ParamField): Record<string, string> {
   return { gridColumn: `span ${field.span ?? 1}` }
 }
+
+const gridStyle = computed(() => ({
+  gridTemplateColumns: `repeat(${props.formColumns ?? 3}, minmax(0, 1fr))`,
+}))
+
+/**
+ * 滑块的当前值，用来在标签行右端显示。
+ *
+ * 这个读数**必须可编辑**，不能只做展示 —— 滑块拖到 0.7 很容易，拖到 0.65
+ * 就不行了，而温度、CFG 这类参数恰恰经常要精确到小数点后一位。
+ * 所以标签行右端放的是个无按钮的窄数字输入框，不是徽标。
+ */
+function sliderValue(key: string): number | null {
+  const v = merged.value[key]
+  return typeof v === 'number' ? v : null
+}
+
+/**
+ * 条件展开边界值。
+ *
+ * 不能直接 `:min="field.min"` —— tsconfig 开了 exactOptionalPropertyTypes，
+ * 给可选属性显式传 undefined 会判为类型错误。这个写法在本文件之外
+ * （ParamControl 的 numericBounds）已经用过。
+ */
+function sliderBounds(field: ParamField): Record<string, number> {
+  return {
+    ...(field.min !== undefined ? { min: field.min } : {}),
+    ...(field.max !== undefined ? { max: field.max } : {}),
+    ...(field.step !== undefined ? { step: field.step } : {}),
+  }
+}
 </script>
 
 <template>
@@ -65,14 +98,25 @@ function spanStyle(field: ParamField): Record<string, string> {
       </NTooltip>
     </div>
 
-    <div class="grid">
+    <div class="grid" :style="gridStyle">
       <div
         v-for="field in groups.basic"
         :key="field.key"
         class="field"
         :style="spanStyle(field)"
       >
-        <label class="field-label">{{ field.label }}</label>
+        <div class="field-head">
+          <label class="field-label">{{ field.label }}</label>
+          <NInputNumber
+            v-if="field.type === 'slider'"
+            v-bind="sliderBounds(field)"
+            class="field-value"
+            size="tiny"
+            :show-button="false"
+            :value="sliderValue(field.key)"
+            @update:value="v => emit('update:param', field.key, v)"
+          />
+        </div>
         <ParamControl
           :field="field"
           :value="merged[field.key]"
@@ -86,14 +130,25 @@ function spanStyle(field: ParamField): Record<string, string> {
 
     <NCollapse v-if="groups.advanced.length > 0" class="advanced">
       <NCollapseItem :title="advancedTitle" name="advanced">
-        <div class="grid">
+        <div class="grid" :style="gridStyle">
           <div
             v-for="field in groups.advanced"
             :key="field.key"
             class="field"
             :style="spanStyle(field)"
           >
-            <label class="field-label">{{ field.label }}</label>
+            <div class="field-head">
+              <label class="field-label">{{ field.label }}</label>
+              <NInputNumber
+                v-if="field.type === 'slider'"
+                v-bind="sliderBounds(field)"
+                class="field-value"
+                size="tiny"
+                :show-button="false"
+                :value="sliderValue(field.key)"
+                @update:value="v => emit('update:param', field.key, v)"
+              />
+            </div>
             <ParamControl
               :field="field"
               :value="merged[field.key]"
@@ -150,9 +205,9 @@ function spanStyle(field: ParamField): Record<string, string> {
   color: #c7d2fe;
 }
 
+/* 列数由节点的 formColumns 决定，见 gridStyle */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -164,11 +219,32 @@ function spanStyle(field: ParamField): Record<string, string> {
   min-width: 0;
 }
 
+/* 标签行：标签在左，滑块的当前值在右。
+   把读数提到这一行是为了让它和标题同一视觉层级 —— 数值是这一项的结果，
+   贴在控件旁边会被滑块的长度带得来回漂。 */
+.field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 22px;
+}
+
 .field-label {
   font-size: var(--fs-label);
   font-weight: 600;
   color: #d4d4d8;
   line-height: var(--lh-tight);
+}
+
+/* 窄到只够放 0.65 这种值，不做成通用输入框的样子 */
+.field-value {
+  width: 68px;
+  flex-shrink: 0;
+}
+
+.field-value :deep(.n-input__input-el) {
+  text-align: right;
 }
 
 /* 说明文字常驻显示，不进 tooltip —— 新手最需要它的时候不会去悬停。

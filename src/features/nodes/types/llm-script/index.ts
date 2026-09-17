@@ -49,13 +49,15 @@ const definition: NodeTypeDefinition<LlmScriptParams> = {
   outputs: [
     { id: 'script', label: '剧本', type: 'text' },
   ],
+  // 两列：模型名与题材风格的选项文字较长，挤在三分之一下会被截断
+  formColumns: 2,
   params: [
     {
       key: 'prompt',
       label: '创意',
       type: 'textarea',
       rows: 4,
-      span: 3,
+      span: 2,
       placeholder: '一句话描述你的想法。例如：赛博朋克少女在雨夜街头寻找失踪的哥哥',
       hint: '上游端口接了线就用上游的文本，这里填的内容会被忽略',
     },
@@ -68,6 +70,14 @@ const definition: NodeTypeDefinition<LlmScriptParams> = {
       hint: '长剧本优先选上下文窗口大的',
     },
     {
+      key: 'style',
+      label: '题材风格',
+      type: 'select',
+      options: STYLES,
+      default: 'none',
+      hint: '会作为人设前缀注入，影响措辞与节奏',
+    },
+    {
       key: 'temperature',
       label: '创意程度',
       type: 'slider',
@@ -75,15 +85,11 @@ const definition: NodeTypeDefinition<LlmScriptParams> = {
       max: 2,
       step: 0.1,
       default: 0.8,
-      hint: '0.3 忠实改写原文，0.8 常规创作，1.3 发散脑暴',
-    },
-    {
-      key: 'style',
-      label: '题材风格',
-      type: 'select',
-      options: STYLES,
-      default: 'none',
-      hint: '会作为人设前缀注入，影响措辞与节奏',
+      span: 2,
+      // 温度是个抽象数值，两端配语义锚点比看数字好懂。
+      // 有锚点之后就不需要再写一行 hint 解释刻度了 —— 那两行是重复的。
+      minLabel: '保守',
+      maxLabel: '大胆',
     },
     {
       key: 'topP',
@@ -112,7 +118,8 @@ const definition: NodeTypeDefinition<LlmScriptParams> = {
       label: '人设 / 附加要求',
       type: 'textarea',
       rows: 3,
-      span: 3,
+      // 栅格是两列，span 不能超过它 —— 否则会撑出一个隐式的第三列
+      span: 2,
       advanced: true,
       placeholder: '例如：以第一人称旁白叙述，避免出现具体品牌名',
       hint: '写在这里的指令优先级最高',

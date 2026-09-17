@@ -17,26 +17,42 @@
 
 :root {
   /* ── 字号（阅读档：表单 / 弹窗 / 面板）──────────────────────────── */
-  --fs-title: 16px; /* 弹窗标题 */
-  --fs-body: 13px; /* 正文、输入框内容、按钮 */
-  --fs-label: 13px; /* 字段标签 */
-  --fs-hint: 12px; /* 字段说明 —— 常驻提示文字，最需要看清的一档 */
-  --fs-caption: 12px; /* 分节小标题 */
-  --fs-meta: 11px; /* 次要元信息：端口状态、预估金额 */
-  --fs-micro: 10px; /* 极小角标：必填标记 */
-  --fs-icon: 18px; /* 弹窗标题图标 */
+  --fs-title: 16px;
+  /* 弹窗标题 */
+  --fs-body: 13px;
+  /* 正文、输入框内容、按钮 */
+  --fs-label: 13px;
+  /* 字段标签 */
+  --fs-hint: 12px;
+  /* 字段说明 —— 常驻提示文字，最需要看清的一档 */
+  --fs-caption: 12px;
+  /* 分节小标题 */
+  --fs-meta: 11px;
+  /* 次要元信息：端口状态、预估金额 */
+  --fs-micro: 10px;
+  /* 极小角标：必填标记 */
+  --fs-icon: 18px;
+  /* 弹窗标题图标 */
 
   /* ── 行高 ────────────────────────────────────────────────────── */
-  --lh-tight: 1.35; /* 标题、标签 */
-  --lh-body: 1.6; /* 提示文字（多行，行距要大） */
+  --lh-tight: 1.35;
+  /* 标题、标签 */
+  --lh-body: 1.6;
+  /* 提示文字（多行，行距要大） */
 
   /* ── 圆角（从大到小分级）────────────────────────────────────── */
-  --r-modal: 14px; /* 弹窗本体 */
-  --r-panel: 12px; /* 候选面板、大块容器 */
-  --r-card: 10px; /* 候选缩略图、分组块 */
-  --r-control: 8px; /* 输入框、下拉、按钮 */
-  --r-chip: 6px; /* 标签、小徽章 */
-  --r-pill: 999px; /* 圆形元素 */
+  --r-modal: 14px;
+  /* 弹窗本体 */
+  --r-panel: 12px;
+  /* 候选面板、大块容器 */
+  --r-card: 10px;
+  /* 候选缩略图、分组块 */
+  --r-control: 8px;
+  /* 输入框、下拉、按钮 */
+  --r-chip: 6px;
+  /* 标签、小徽章 */
+  --r-pill: 999px;
+  /* 圆形元素 */
 
   /* ── 说明文字颜色 ──────────────────────────────────────────────
      这个令牌带一条硬约束：**必须过 WCAG AA（对比度 ≥ 4.5:1）**。
@@ -71,4 +87,19 @@ button {
    弹窗 teleport 到 body，组件内的 scoped 样式够不着，所以这条是全局的。 */
 .n-modal.n-card {
   transform-origin: center center !important;
+}
+
+/* ── Naive 下拉菜单的入场动画 ──────────────────────────────────────────────
+   默认是 `fadeInScaleUpTransition`：从 scale(0.9) 放大到 1 同时淡入。
+   问题在结尾 —— 动画结束时 Naive 才把 transform 从 matrix(1,0,0,1,0,0)
+   改成 none（实测 t=260ms 还是前者，t=377ms 才变）。带单位变换的元素会进
+   合成层，文字在那里是按缩放栅格化的；移除后切回普通渲染、重新栅格化，
+   落地那一瞬会看到轻微一跳。
+
+   改成只淡入。下拉菜单出现在触发器正下方，本来也不需要靠缩放指示方向，
+   去掉缩放既消除跳变、也让菜单显得更沉。 */
+.n-base-select-menu.fade-in-scale-up-transition-enter-active,
+.n-base-select-menu.fade-in-scale-up-transition-leave-active {
+  transform: none !important;
+  transition: opacity 0.3s ease-in-out !important;
 }

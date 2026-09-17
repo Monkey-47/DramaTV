@@ -99,6 +99,33 @@ describe('param schema sanity', () => {
     }
   })
 
+  // 回归：栅格是 formColumns 列，span 超过它就会撑出隐式列、把布局挤乱。
+  // 之前 llm-script 改成两列后，systemPrompt 还留着 span: 3。
+  it('no field spans more columns than its node declares', () => {
+    for (const def of getAllNodeTypes()) {
+      const columns = def.formColumns ?? 3
+      for (const field of def.params) {
+        expect(
+          field.span ?? 1,
+          `${def.type}.${field.key} 的 span 超过了 ${columns} 列`,
+        ).toBeLessThanOrEqual(columns)
+      }
+    }
+  })
+
+  // 端点标签只对滑块有意义。放在别的类型上是静默失效的配置 ——
+  // 作者以为会显示，实际什么都不发生。
+  it('slider end labels only appear on sliders', () => {
+    for (const def of getAllNodeTypes()) {
+      for (const field of def.params) {
+        if (field.minLabel === undefined && field.maxLabel === undefined) {
+          continue
+        }
+        expect(field.type, `${def.type}.${field.key} 声明了端点标签但不是 slider`).toBe('slider')
+      }
+    }
+  })
+
   it('slider fields declare min, max and step so the control is usable', () => {
     for (const def of getAllNodeTypes()) {
       for (const field of def.params) {

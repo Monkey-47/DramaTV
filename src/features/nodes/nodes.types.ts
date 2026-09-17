@@ -50,8 +50,20 @@ export interface ParamField {
   min?: number
   max?: number
   step?: number
+  /**
+   * 滑块两端的语义标签，如「保守 / 大胆」。
+   *
+   * 只对 `slider` 生效。**必须由字段自己声明，不能由控件硬编码** ——
+   * 同一个滑块控件也用于采样步数、降噪强度，那里显示「保守 / 大胆」就是错的。
+   * 抽象的数值配上语义锚点才好懂，但没有合适锚点时宁可不要。
+   */
+  minLabel?: string
+  maxLabel?: string
   default?: string | number | boolean | string[]
-  /** 表单里占几列（默认 1） */
+  /**
+   * 表单里占几列（默认 1）。
+   * 上限是所属节点声明的 `formColumns`，超出会被栅格挤到下一行。
+   */
   span?: 1 | 2 | 3
   /** 文本域行数 */
   rows?: number
@@ -100,6 +112,13 @@ export interface NodeTypeDefinition<TParams = Record<string, unknown>> {
   inputs: Port[]
   outputs: Port[]
   params: ParamSchema
+  /**
+   * 表单栅格列数（默认 3）。
+   *
+   * 列数取决于字段的性质，不是全局偏好：短数值多（步数、CFG、种子）用 3 列更紧凑；
+   * 长下拉（模型名、题材风格）挤在三分之一宽里会被截断，用 2 列才看得清。
+   */
+  formColumns?: 2 | 3
   estimate?: (params: TParams) => NodeEstimate
   /**
    * 节点卡片上的单行参数摘要。

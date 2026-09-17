@@ -55,7 +55,7 @@ const radioValue = computed<string | number | boolean | null>(() => {
 
 /**
  * 只保留 { label, value }：把 ParamOption 的 hint 带进 naive-ui 的
- * SelectMixedOption 联合类型会编译失败，所以 hint 改由 renderOptionLabel
+ * SelectMixedOption 联合类型会编译失败，所以 hint 改由 renderOption
  * 从 field.options 里按 value 反查。
  */
 const selectOptions = computed(() =>
@@ -78,7 +78,18 @@ function set(v: unknown): void {
   emit('update:value', v)
 }
 
-/** 选项名（如 DPM++ 3M SDE）对人没有信息量，把说明画在标签下方 */
+/**
+ * 选项行：在标签下方补一句说明。选项名（如 DPM++ 3M SDE）本身没有信息量，全靠这行。
+ *
+ * **必须用 `renderLabel` 而不是 `renderOption`。** `renderOption` 的输出会包在
+ * `.n-base-select-option__content` **外面**，而 padding 和选中高亮都挂在 content 上 ——
+ * 嵌套一反，高亮框就只裹住标签、说明文字掉到框外，整行看着是断的。
+ *
+ * 副作用是这棵树**同时**用于下拉行和回填到输入框的选中值，而后者高度固定、
+ * 塞两行会溢出。所以说明在下拉菜单外由 CSS 隐藏，见文件末尾的非 scoped 样式。
+ * 也试过用 `selected` 参数区分，但它对「输入框里的选中值」和「下拉里选中的那一行」
+ * 都为真，一关就把后者也关了。
+ */
 function renderOptionLabel(option: { label?: string, value?: string | number }): VNodeChild {
   const hint = props.field.options?.find(o => o.value === option.value)?.hint
   if (hint === undefined) {
@@ -118,7 +129,12 @@ function renderOptionLabel(option: { label?: string, value?: string | number }):
     @update:value="v => set(v)"
   />
 
+  <!-- 当前值的读数不在这里，而在 ParamForm 的标签行右端 ——
+       贴着滑块会被轨道长度带得左右漂，和标题同一行才稳定。 -->
   <div v-else-if="field.type === 'slider'" class="slider-row">
+    <!-- 语义锚点贴在轨道两端，读起来就是刻度的注释。
+         标签来自字段自己的声明，没有就不显示 —— 采样步数标「保守/大胆」是错的。 -->
+    <span v-if="field.minLabel !== undefined" class="slider-end">{{ field.minLabel }}</span>
     <NSlider
       class="slider"
       :value="numValue ?? field.min ?? 0"
@@ -128,15 +144,7 @@ function renderOptionLabel(option: { label?: string, value?: string | number }):
       :tooltip="false"
       @update:value="set"
     />
-    <!-- 只有滑块没有数字，精确调参就没法做 -->
-    <NInputNumber
-      v-bind="numericBounds"
-      class="slider-readout"
-      size="small"
-      :value="numValue"
-      :show-button="false"
-      @update:value="v => set(v)"
-    />
+    <span v-if="field.maxLabel !== undefined" class="slider-end">{{ field.maxLabel }}</span>
   </div>
 
   <NSelect
@@ -196,10 +204,13 @@ function renderOptionLabel(option: { label?: string, value?: string | number }):
   width: 100%;
 }
 
+/* 滑块与端点标签同一行：标签贴着轨道两端，读起来就是刻度的注释。
+   标签不换行、不收缩，宽度让给滑块。 */
 .slider-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-height: 32px;
 }
 
 .slider {
@@ -207,14 +218,18 @@ function renderOptionLabel(option: { label?: string, value?: string | number }):
   min-width: 0;
 }
 
-.slider-readout {
-  width: 76px;
+.slider-end {
   flex-shrink: 0;
+  font-size: var(--fs-meta);
+  color: var(--fg-hint);
+  white-space: nowrap;
 }
 </style>
 
 <style>
-/* 非 scoped：naive-ui 的浮层挂在 body 上 */
+/* 非 scoped：naive-ui 的浮层挂在 body 上。
+   顺带说明为什么这里不用 :deep() —— 组件根是多根片段（一堆 v-if 分支），
+   没有承载 scoped 属性的祖先元素，:deep() 编译出的 [data-v-x] 前缀匹配不到。 */
 .opt {
   display: flex;
   flex-direction: column;
@@ -233,5 +248,16 @@ function renderOptionLabel(option: { label?: string, value?: string | number }):
   font-size: var(--fs-meta);
   line-height: 1.35;
   color: var(--fg-hint);
+}
+
+/* 回填到输入框里的那份说明要藏掉 —— 输入框高度固定，两行会溢出到边框外。
+   只针对这一处容器（.n-base-selection-label），不要动下拉里的选项行。
+
+   试过反过来写「默认隐藏 + .n-base-select-menu 内显示」，会让打开时抖一下：
+   选项在某一帧还没落到菜单容器之下，此时说明是隐藏的、行是矮的，菜单就按
+   矮行定了尺寸；类名落上后行变高，菜单当场再长一截（实测高度 110 → 127）。
+   注意下拉选项用的是 .n-base-select-option__content，和这里不是同一个类。 */
+.n-base-selection-label .opt-hint {
+  display: none;
 }
 </style>
