@@ -158,7 +158,12 @@ provide(CANVAS_ACTIONS, {
   removeNode: (nodeId: string) => emit('removeNode', nodeId),
 })
 
-const nodeTypes = { 'canvas-node': markRaw(CanvasNode), 'group-node': markRaw(GroupNode) }
+/**
+ * Vue Flow 的 `:node-types` 要的是「节点 type → Vue 组件」，和 `props.nodeTypes`
+ * （节点 type → RenderNodeDefinition，是给 mapping.ts 查定义用的）不是同一回事。
+ * 名字撞在一起容易改错，所以这里叫 `vueFlowNodeTypes`。
+ */
+const vueFlowNodeTypes = { 'canvas-node': markRaw(CanvasNode), 'group-node': markRaw(GroupNode) }
 
 interface RenderedOutput {
   groupNodes: import('./mapping.types').VueFlowGroupNode[]
@@ -279,7 +284,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <VueFlow
       :nodes="allNodes"
       :edges="rendered.edges"
-      :node-types="props.nodeTypes"
+      :node-types="vueFlowNodeTypes"
       :default-viewport="{ x: 0, y: 0, zoom: 1 }"
       :min-zoom="ZOOM.min"
       :max-zoom="ZOOM.max"
