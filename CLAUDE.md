@@ -107,6 +107,18 @@ MSW 只在 `import.meta.env.DEV` 下动态 import，生产包里 grep 不到任�
 - `exactOptionalPropertyTypes` —— 可选属性若调用方会传 `undefined`，声明处需显式写 `| undefined`。**组件的 props 几乎总是需要这个**，否则父组件传可选值时判为类型错误
 - `noUncheckedIndexedAccess` —— `arr[i]` 的类型是 `T | undefined`，需要显式收窄
 
+## Vue SFC 模板里 props 必须显式带 `props.` 前缀
+
+`<script setup>` 里写了 `const props = defineProps<...>()` 之后，模板里可以裸写字段名（Vue 自动绑定），也可以写 `props.xxx`。**本项目统一后者** —— script 和 template 里的 props 引用都显式带 `props.` 前缀。
+
+理由：
+
+- Vue Flow 的 `NodeProps<T>` 会一次性注入 `id / data / type / position / selected / dragging / connectable` 等十几个字段，裸写时 `data` 很容易和本地变量撞名，也看不出是哪来的
+- 读代码时一眼分清「这是 props」还是「这是本地 computed / ref」，少一个心智负担
+- 本项目的 script 部分本来就全写 `props.xxx`，template 跟它对齐最自然
+
+**不要**写裸的 `data.meta.reused`、`open`、`status === 'running'`；**要**写 `props.data.meta.reused`、`props.open`、`props.status === 'running'`。
+
 ## 字号有两套，不要合并
 
 `src/styles/tokens.css` 定义了「阅读档」字号（13px 正文 / 12px 说明）。**画布组件不用它** —— 画布上的节点是「扫视」的，9–11px 密集排版是对的，LOD 还会按缩放隐藏细节；而弹窗表单是「细读」的，必须用可读档。
