@@ -19,7 +19,7 @@ const props = defineProps<{
   frozen?: boolean | undefined
   /** 该节点正在跑，候选还没出来 */
   busy?: boolean | undefined
-  /** 本轮是复用缓存产出（设计文档 §4.3 要求与真跑可区分） */
+  /** 本轮是否复用缓存产出（与真跑可区分） */
   reused?: boolean | undefined
   /** 工作流名，显示在标题栏 */
   workflowName?: string | undefined
