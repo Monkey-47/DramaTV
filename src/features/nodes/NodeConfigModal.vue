@@ -130,16 +130,16 @@ function onAfterLeave(): void {
 
     <div class="modal-body">
       <!-- 运行态：跑过才有内容，没跑过整块不出现 -->
-      <div v-if="props.runState?.status" class="run-strip" :data-status="props.runState!.status">
+      <div v-if="props.runState?.status" class="run-strip" :data-status="props.runState.status">
         <span class="run-status">{{ runStatusText }}</span>
         <span v-if="props.runState?.progress !== undefined" class="run-progress">
-          {{ Math.round(props.runState?.progress) }}%
+          {{ Math.round(props.runState.progress) }}%
         </span>
         <span v-if="props.runState?.reused" class="run-reused">⚡ 复用缓存</span>
       </div>
       <div v-if="props.runState?.error" class="run-error">
-        <code>{{ props.runState!.error!.code }}</code>
-        {{ props.runState!.error!.message }}
+        <code>{{ props.runState.error.code }}</code>
+        {{ props.runState.error.message }}
       </div>
 
       <!-- 输入端口：把「为什么跑不起来」顶到最前面 -->
