@@ -106,7 +106,7 @@ function onAfterLeave(): void {
 
 <template>
   <NModal
-    :show="open"
+    :show="props.open"
     preset="card"
     :style="{ width: '720px', maxWidth: '92vw' }"
     :mask-closable="true"
@@ -116,13 +116,13 @@ function onAfterLeave(): void {
   >
     <template #header>
       <div class="modal-header">
-        <span class="modal-icon">{{ definition?.icon ?? '◻' }}</span>
+        <span class="modal-icon">{{ props.definition?.icon ?? '◻' }}</span>
         <div class="modal-heading">
           <div class="modal-title">
-            {{ definition?.label ?? '未知节点' }}
+            {{ props.definition?.label ?? '未知节点' }}
           </div>
-          <div v-if="definition?.description" class="modal-desc">
-            {{ definition.description }}
+          <div v-if="props.definition?.description" class="modal-desc">
+            {{ props.definition.description }}
           </div>
         </div>
       </div>
@@ -130,16 +130,16 @@ function onAfterLeave(): void {
 
     <div class="modal-body">
       <!-- 运行态：跑过才有内容，没跑过整块不出现 -->
-      <div v-if="runState?.status" class="run-strip" :data-status="runState.status">
+      <div v-if="props.runState?.status" class="run-strip" :data-status="props.runState!.status">
         <span class="run-status">{{ runStatusText }}</span>
-        <span v-if="runState.progress !== undefined" class="run-progress">
-          {{ Math.round(runState.progress) }}%
+        <span v-if="props.runState?.progress !== undefined" class="run-progress">
+          {{ Math.round(props.runState?.progress) }}%
         </span>
-        <span v-if="runState.reused" class="run-reused">⚡ 复用缓存</span>
+        <span v-if="props.runState?.reused" class="run-reused">⚡ 复用缓存</span>
       </div>
-      <div v-if="runState?.error" class="run-error">
-        <code>{{ runState.error.code }}</code>
-        {{ runState.error.message }}
+      <div v-if="props.runState?.error" class="run-error">
+        <code>{{ props.runState!.error!.code }}</code>
+        {{ props.runState!.error!.message }}
       </div>
 
       <!-- 输入端口：把「为什么跑不起来」顶到最前面 -->
@@ -172,11 +172,11 @@ function onAfterLeave(): void {
       </div>
 
       <ParamForm
-        v-if="definition"
-        :schema="definition.params"
-        :params="params"
-        :presets="definition.presets"
-        :form-columns="definition.formColumns"
+        v-if="props.definition"
+        :schema="props.definition.params"
+        :params="props.params"
+        :presets="props.definition.presets"
+        :form-columns="props.definition.formColumns"
         @update:param="(k, v) => emit('update:param', k, v)"
         @apply-preset="p => emit('applyPreset', p)"
       />

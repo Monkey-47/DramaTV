@@ -103,7 +103,7 @@ const dotState = computed(() => {
       :title="dotState === 'reconnecting' ? '事件流断线，正在重连' : undefined"
     >
       <span class="run-dot" />
-      <span>{{ runningCount ?? 0 }} 运行中</span>
+      <span>{{ props.runningCount ?? 0 }} 运行中</span>
       <span class="separator">·</span>
       <span>{{ costLabel }}</span>
     </div>

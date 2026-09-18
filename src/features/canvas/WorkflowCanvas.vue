@@ -279,7 +279,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <VueFlow
       :nodes="allNodes"
       :edges="rendered.edges"
-      :node-types="nodeTypes"
+      :node-types="props.nodeTypes"
       :default-viewport="{ x: 0, y: 0, zoom: 1 }"
       :min-zoom="ZOOM.min"
       :max-zoom="ZOOM.max"
@@ -298,7 +298,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
       class="vue-flow-dark"
       @node-drag-stop="onNodeDragStop"
     >
-      <Panel v-if="workflows" position="bottom-left" class="canvas-panel">
+      <Panel v-if="props.workflows" position="bottom-left" class="canvas-panel">
         <button class="add-workflow" type="button" @click="emit('workflowAdd')">
           + 新建工作流
         </button>

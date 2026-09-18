@@ -41,7 +41,7 @@ function confirm(): void {
 
 <template>
   <NModal
-    :show="open"
+    :show="props.open"
     preset="card"
     :style="{ width: '420px', maxWidth: '92vw' }"
     :bordered="false"
@@ -56,11 +56,11 @@ function confirm(): void {
       <NInput
         ref="inputEl"
         v-model:value="draft"
-        :placeholder="typeLabel"
+        :placeholder="props.typeLabel"
         @keydown.enter.prevent="confirm"
       />
       <p class="dlg-hint">
-        留空则恢复显示类型名「{{ typeLabel }}」。同一工作流里有多个同类型节点时，
+        留空则恢复显示类型名「{{ props.typeLabel }}」。同一工作流里有多个同类型节点时，
         起个能认出来的名字会省很多事。
       </p>
     </div>

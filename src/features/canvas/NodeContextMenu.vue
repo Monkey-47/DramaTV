@@ -115,13 +115,13 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <Transition name="ctx">
       <div
-        v-if="open"
+        v-if="props.open"
         ref="el"
         class="ctx-menu"
         role="menu"
         :style="{ left: `${pos.x}px`, top: `${pos.y}px` }"
       >
-        <template v-for="(section, si) in sections" :key="si">
+        <template v-for="(section, si) in props.sections" :key="si">
           <div v-if="si > 0" class="ctx-divider" />
           <div v-if="section.title" class="ctx-title">
             {{ section.title }}

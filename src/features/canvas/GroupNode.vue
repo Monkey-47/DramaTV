@@ -122,7 +122,7 @@ function hexToRgba(hex: string, alpha: number): string {
         @pointerdown.stop
         @dblclick.stop="startRename"
       >
-        {{ data.name }}
+        {{ props.data.name }}
       </span>
 
       <template v-if="actions && confirming">

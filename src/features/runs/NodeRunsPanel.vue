@@ -79,7 +79,7 @@ function timeText(ts: number | undefined): string {
 
 <template>
   <NModal
-    :show="open"
+    :show="props.open"
     preset="card"
     :style="{ width: '640px', maxWidth: '92vw' }"
     :bordered="false"
@@ -88,8 +88,8 @@ function timeText(ts: number | undefined): string {
   >
     <template #header>
       <div class="panel-header">
-        <span class="panel-title">{{ nodeLabel }} · 运行历史</span>
-        <span class="panel-sub">本次会话共 {{ entries.length }} 次</span>
+        <span class="panel-title">{{ props.nodeLabel }} · 运行历史</span>
+        <span class="panel-sub">本次会话共 {{ props.entries.length }} 次</span>
       </div>
     </template>
 

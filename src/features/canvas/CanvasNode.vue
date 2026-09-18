@@ -75,19 +75,19 @@ function portStyle(type: PortType) {
     @contextmenu.prevent="onContextMenu"
   >
     <NodeShell
-      :label="data.label"
-      :icon="data.icon"
-      :summary="data.summary"
-      :status="data.meta.status"
-      :frozen="data.meta.frozen"
-      :reused="data.meta.reused"
-      :progress="data.meta.progress"
-      :candidate-count="data.meta.candidateCount"
+      :label="props.data.label"
+      :icon="props.data.icon"
+      :summary="props.data.summary"
+      :status="props.data.meta.status"
+      :frozen="props.data.meta.frozen"
+      :reused="props.data.meta.reused"
+      :progress="props.data.meta.progress"
+      :candidate-count="props.data.meta.candidateCount"
       @open-candidates="onShowCandidates"
     />
 
     <Handle
-      v-for="p in data.inputs"
+      v-for="p in props.data.inputs"
       :id="`${props.id}::${p.id}`"
       :key="`in-${p.id}`"
       type="target"
@@ -95,7 +95,7 @@ function portStyle(type: PortType) {
       :style="portStyle(p.type)"
     />
     <Handle
-      v-for="p in data.outputs"
+      v-for="p in props.data.outputs"
       :id="`${props.id}::${p.id}`"
       :key="`out-${p.id}`"
       type="source"

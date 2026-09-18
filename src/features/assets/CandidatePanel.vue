@@ -19,7 +19,7 @@ const props = defineProps<{
   frozen?: boolean | undefined
   /** 该节点正在跑，候选还没出来 */
   busy?: boolean | undefined
-  /** 本轮是复用缓存产出（设计文档 §4.3 要求与真跑可区分） */
+  /** 本轮是否复用缓存产出（与真跑可区分） */
   reused?: boolean | undefined
   /** 工作流名，显示在标题栏 */
   workflowName?: string | undefined
@@ -114,7 +114,7 @@ onBeforeUnmount(() => {
     -->
     <Transition name="candidate" @after-leave="emit('afterLeave')">
       <div
-        v-if="open"
+        v-if="props.open"
         class="candidate-backdrop"
         @click.self="emit('close')"
       >
@@ -122,18 +122,18 @@ onBeforeUnmount(() => {
           class="candidate-panel"
           role="dialog"
           aria-modal="true"
-          :aria-label="`${nodeLabel} 的候选产出`"
+          :aria-label="`${props.nodeLabel} 的候选产出`"
         >
           <!-- 标题栏 -->
           <header class="panel-header">
             <div class="panel-title">
-              <span class="panel-node-label">{{ nodeLabel }}</span>
-              <span v-if="workflowName" class="panel-workflow">工作流「{{ workflowName }}」</span>
+              <span class="panel-node-label">{{ props.nodeLabel }}</span>
+              <span v-if="props.workflowName" class="panel-workflow">工作流「{{ props.workflowName }}」</span>
             </div>
 
             <div class="panel-header-badges">
-              <span v-if="reused" class="badge badge-reused">⚡ 复用缓存</span>
-              <span v-if="frozen" class="badge badge-frozen">🔒 已冻结</span>
+              <span v-if="props.reused" class="badge badge-reused">⚡ 复用缓存</span>
+              <span v-if="props.frozen" class="badge badge-frozen">🔒 已冻结</span>
             </div>
 
             <button class="panel-close" type="button" title="关闭（Esc）" @click="emit('close')">
@@ -143,7 +143,7 @@ onBeforeUnmount(() => {
 
           <!-- 上半区：候选图墙 -->
           <div class="panel-candidates">
-            <div v-if="busy && !hasCandidates" class="state-block">
+            <div v-if="props.busy && !hasCandidates" class="state-block">
               <span class="spinner" />
               <p>正在生成候选…</p>
             </div>
@@ -159,10 +159,10 @@ onBeforeUnmount(() => {
 
             <ul v-else class="candidate-grid">
               <li
-                v-for="(candidate, index) in candidates"
+                v-for="(candidate, index) in props.candidates"
                 :key="candidate.assetId"
                 class="candidate-tile"
-                :class="{ 'is-adopted': candidate.assetId === adoptedId }"
+                :class="{ 'is-adopted': candidate.assetId === props.adoptedId }"
                 :style="placeholderStyle(candidate.assetId)"
                 :title="candidate.assetId"
                 @click="emit('adopt', candidate.assetId)"
@@ -181,7 +181,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <span class="tile-index">{{ index + 1 }}</span>
-                <span v-if="candidate.assetId === adoptedId" class="tile-check">✓</span>
+                <span v-if="candidate.assetId === props.adoptedId" class="tile-check">✓</span>
               </li>
             </ul>
           </div>
@@ -194,8 +194,8 @@ onBeforeUnmount(() => {
           <!-- 操作栏 -->
           <footer class="panel-actions">
             <div class="actions-left">
-              <button class="btn btn-primary" type="button" :disabled="busy" @click="emit('run')">
-                {{ busy ? '运行中…' : '▶ 运行' }}
+              <button class="btn btn-primary" type="button" :disabled="props.busy" @click="emit('run')">
+                {{ props.busy ? '运行中…' : '▶ 运行' }}
               </button>
               <span v-if="props.adoptedId" class="adopted-hint">
                 已采用第 {{ adoptedIndex >= 0 ? adoptedIndex + 1 : '—' }} 张

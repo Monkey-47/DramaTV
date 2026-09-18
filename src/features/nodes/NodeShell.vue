@@ -60,46 +60,46 @@ const failedColor = computed(() => STATE.error)
 </script>
 
 <template>
-  <div class="node-shell" :data-status="status ?? 'idle'">
+  <div class="node-shell" :data-status="props.status ?? 'idle'">
     <div class="state-bar" :style="{ background: barColor }" />
 
     <div class="header">
-      <span v-if="icon" class="icon">{{ icon }}</span>
-      <span class="label">{{ label }}</span>
+      <span v-if="props.icon" class="icon">{{ props.icon }}</span>
+      <span class="label">{{ props.label }}</span>
     </div>
 
-    <div v-if="summary" class="summary">
-      {{ summary }}
+    <div v-if="props.summary" class="summary">
+      {{ props.summary }}
     </div>
 
-    <div v-if="status === 'running'" class="progress">
+    <div v-if="props.status === 'running'" class="progress">
       <div class="progress-fill" :style="progressStyle" />
     </div>
 
-    <div v-if="frozen" class="badge" :style="{ color: frozenColor }">
+    <div v-if="props.frozen" class="badge" :style="{ color: frozenColor }">
       🔒 已冻结
     </div>
-    <div v-else-if="reused" class="badge" :style="{ color: reusedColor }">
+    <div v-else-if="props.reused" class="badge" :style="{ color: reusedColor }">
       ⚡ 复用缓存
     </div>
-    <div v-else-if="status === 'failed'" class="badge" :style="{ color: failedColor }">
+    <div v-else-if="props.status === 'failed'" class="badge" :style="{ color: failedColor }">
       ✗ 失败
     </div>
-    <div v-else-if="status === 'skipped'" class="badge muted">
+    <div v-else-if="props.status === 'skipped'" class="badge muted">
       ⊘ 已跳过
     </div>
 
     <!-- 候选入口。不用双击 —— 单击开配置弹窗后遮罩会吃掉双击的后半段 -->
     <button
-      v-if="(candidateCount ?? 0) > 0"
+      v-if="(props.candidateCount ?? 0) > 0"
       class="candidates-chip"
       type="button"
-      :title="`查看 ${candidateCount} 个候选`"
+      :title="`查看 ${props.candidateCount} 个候选`"
       @click.stop="emit('openCandidates')"
       @pointerdown.stop
     >
       <span class="chip-grid" />
-      {{ candidateCount }} 个候选
+      {{ props.candidateCount }} 个候选
     </button>
   </div>
 </template>
